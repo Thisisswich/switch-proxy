@@ -22,3 +22,10 @@ def webhook():
             requests.post(f"http://{target['pi_ip']}:5000/trigger", json=target)
             return jsonify({"status": "sent to Pi"}), 200
     return jsonify({"status": "ignored"}), 200
+
+import os
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
+
