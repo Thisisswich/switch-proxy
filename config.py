@@ -1,7 +1,7 @@
 import stripe
 
 # Your Stripe webhook secret
-STRIPE_WEBHOOK_SECRET = "whsec_XXXXXXX"
+STRIPE_WEBHOOK_SECRET = "whsec_cUSpoPShjKaFJmAtCr0oxtNrO7aoGKro"
 
 # Mapping Stripe price_id → Shelly config
 DEVICE_MAP = {
