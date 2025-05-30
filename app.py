@@ -12,6 +12,7 @@ logging.basicConfig(level=logging.INFO)
 def webhook():
     payload = request.data
     sig_header = request.headers.get("Stripe-Signature")
+
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
     except Exception as e:
@@ -19,31 +20,19 @@ def webhook():
         return f"Webhook error: {e}", 400
 
     if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        price_id = None
-
-        # Try multiple methods of accessing price_id
+        session_id = event['data']['object']['id']
         try:
-            price_id = session['display_items'][0]['price']['id']
-        except:
-            try:
-                price_id = session['line_items']['data'][0]['price']['id']
-            except:
-                logging.warning("Unable to extract price_id from session.")
+            session = stripe.checkout.Session.retrieve(session_id, expand=['line_items'])
+            price_id = session['line_items']['data'][0]['price']['id']
+        except Exception as e:
+            logging.error(f"Failed to retrieve session or price_id: {e}")
+            return jsonify({"error": "Session fetch failed"}), 400
 
-        if price_id and price_id in DEVICE_MAP:
+        if price_id in DEVICE_MAP:
             target = DEVICE_MAP[price_id]
             logging.info(f"Triggering device for price ID {price_id}: {target}")
-            try:
-                response = requests.post(f"http://{target['pi_ip']}:5000/trigger", json=target, timeout=5)
-                if response.status_code == 200:
-                    return jsonify({"status": "sent to Pi"}), 200
-                else:
-                    logging.error(f"Pi response error: {response.status_code}")
-                    return jsonify({"error": "Failed to trigger Pi"}), 500
-            except Exception as e:
-                logging.error(f"Request to Pi failed: {e}")
-                return jsonify({"error": f"Request to Pi failed: {e}"}), 500
+            requests.post(f"http://{target['pi_ip']}:5000/trigger", json=target)
+            return jsonify({"status": "sent to Pi"}), 200
         else:
             logging.warning(f"Price ID not found in DEVICE_MAP: {price_id}")
     else:
@@ -54,4 +43,3 @@ def webhook():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-
