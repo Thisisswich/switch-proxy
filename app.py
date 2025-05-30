@@ -48,4 +48,6 @@ def webhook():
 @app.route("/trigger", methods=["POST"])
 def trigger():
     data = request.get_json(force=True)
-    logging.info(f"/trigger endpoint received payloa
+    logging.info(f"/trigger endpoint received payload: {data}")
+    return jsonify({"status": "success", "received": data}), 200
+
