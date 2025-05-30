@@ -44,6 +44,8 @@ def webhook():
 
     return jsonify({"status": "ignored"}), 200
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+# ✅ New test route for Cloudflare Tunnel
+@app.route("/trigger", methods=["POST"])
+def trigger():
+    data = request.get_json(force=True)
+    logging.info(f"/trigger endpoint received payloa
