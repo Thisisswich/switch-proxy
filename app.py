@@ -12,7 +12,6 @@ logging.basicConfig(level=logging.INFO)
 def webhook():
     payload = request.data
     sig_header = request.headers.get("Stripe-Signature")
-
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
     except Exception as e:
@@ -20,12 +19,16 @@ def webhook():
         return f"Webhook error: {e}", 400
 
     if event['type'] == 'checkout.session.completed':
-        session_id = event['data']['object']['id']
+        session = event['data']['object']
+        session_id = session.get("id")
+        logging.info(f"Fetching full session for ID: {session_id}")
+
         try:
-            session = stripe.checkout.Session.retrieve(session_id, expand=['line_items'])
-            price_id = session['line_items']['data'][0]['price']['id']
+            # Fetch full session object including line_items
+            full_session = stripe.checkout.Session.retrieve(session_id, expand=["line_items"])
+            price_id = full_session["line_items"]["data"][0]["price"]["id"]
         except Exception as e:
-            logging.error(f"Failed to retrieve session or price_id: {e}")
+            logging.error(f"Failed to retrieve line_items from session: {e}")
             return jsonify({"error": "Session fetch failed"}), 400
 
         if price_id in DEVICE_MAP:
@@ -35,6 +38,7 @@ def webhook():
             return jsonify({"status": "sent to Pi"}), 200
         else:
             logging.warning(f"Price ID not found in DEVICE_MAP: {price_id}")
+
     else:
         logging.info(f"Ignoring event type: {event['type']}")
 
