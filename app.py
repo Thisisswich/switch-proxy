@@ -84,6 +84,7 @@ def trigger():
         except Exception as e:
             logging.error(f"Error during Shelly control thread: {e}")
 
+    logging.info("Starting control_shelly thread...")
     threading.Thread(target=control_shelly, args=(device_ip, duration)).start()
     return jsonify({"status": f"shelly on for {duration} seconds"}), 200
 
