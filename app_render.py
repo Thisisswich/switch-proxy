@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import stripe
 import requests
-import os
 import logging
 from config import STRIPE_WEBHOOK_SECRET, DEVICE_MAP
 
@@ -12,6 +11,7 @@ logging.basicConfig(level=logging.INFO)
 def webhook():
     payload = request.data
     sig_header = request.headers.get("Stripe-Signature")
+
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
     except Exception as e:
@@ -56,3 +56,4 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
