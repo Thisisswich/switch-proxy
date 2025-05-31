@@ -7,7 +7,7 @@ STRIPE_WEBHOOK_SECRET = "whsec_cUSpoPShjKaFJmAtCr0oxtNrO7aoGKro"
 DEVICE_MAP = {
     "price_1RIDIh09QLR8NlKt2YfQ69vc": {
         "device_ip": "192.168.0.244",
-        "duration": 1,
+        "duration": 60,
         "tunnel_url": "https://pi.swichswich.com"
     },
     "price_456": {
