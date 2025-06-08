@@ -24,8 +24,9 @@ def webhook():
         logging.info(f"Fetching full session for ID: {session_id}")
 
         try:
-            full_session = stripe.checkout.Session.retrieve(session_id, expand=["line_items"])
-            price_id = full_session["line_items"]["data"][0]["price"]["id"]
+            # Retrieve line items explicitly, even if amount_total is 0
+            line_items = stripe.checkout.Session.list_line_items(session_id, limit=1)
+            price_id = line_items['data'][0]['price']['id']
         except Exception as e:
             logging.error(f"Failed to retrieve line_items from session: {e}")
             return jsonify({"error": "Session fetch failed"}), 400
@@ -56,4 +57,3 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
