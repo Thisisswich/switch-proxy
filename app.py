@@ -2,7 +2,15 @@ from flask import Flask, request, jsonify
 import stripe
 import requests
 import logging
-from config import STRIPE_WEBHOOK_SECRET, DEVICE_MAP
+import os
+import json
+from dotenv import load_dotenv
+
+load_dotenv()
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
+DEVICE_MAP = json.loads(os.getenv("DEVICE_MAP"))
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +32,6 @@ def webhook():
         logging.info(f"Fetching full session for ID: {session_id}")
 
         try:
-            # Retrieve line items explicitly, even if amount_total is 0
             line_items = stripe.checkout.Session.list_line_items(session_id, limit=1)
             price_id = line_items['data'][0]['price']['id']
         except Exception as e:
@@ -49,7 +56,6 @@ def webhook():
                 return jsonify({"error": "Failed to reach Pi via tunnel"}), 500
         else:
             logging.warning(f"Price ID not found in DEVICE_MAP: {price_id}")
-
     else:
         logging.info(f"Ignoring event type: {event['type']}")
 
