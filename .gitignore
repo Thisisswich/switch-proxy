@@ -1,0 +1,11 @@
+# Ignore environment and secret config files
+.env
+config.py
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore system or IDE-specific files
+.DS_Store
+*.swp
