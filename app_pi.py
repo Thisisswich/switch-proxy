@@ -3,7 +3,12 @@ import requests
 import logging
 import threading
 import time
-from config import DEVICE_MAP
+import os
+import json
+from dotenv import load_dotenv
+
+load_dotenv()
+DEVICE_MAP = json.loads(os.getenv("DEVICE_MAP"))
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
